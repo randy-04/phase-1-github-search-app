@@ -1,48 +1,5 @@
-// // form event listener
-// // document.querySelector('#github-form').addEventListener('submit', handleSubmit);
 
-
-// // // handling the submit and distinguishing which elements to capture from the json file
-// // function handleSubmit(e) {
-// //     e.preventDefault();
-// //     let input = e.target.search.value
-// //     fetchUserData()
-// // }
-
-// const input = document.querySelector('#search').value
-
-// // fetching the user data from the github json server
-// function fetchUserData() {
-//     fetch(`https://api.github.com/search/users?q=${input}`, {
-//         method: 'GET',
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'Accept': 'application/vnd.github.v3+json'
-//         },
-//         // body: JSON.stringify()
-//     })
-//     .then(res=>res.json())
-//     .then(output => console.log(output))
-//     // output.items.forEach(user => buildCard(user));
-// }
-// // fetchUserData()
-
-// // building the card
-// function buildCard(user) {
-//     let card = document.createElement('li')
-//     card.className = 'card'
-//     card.innerHTML = `
-//         <img src="${user.avatar_url}"/>
-//         <div class="content">
-//             <h4>${user.login}</h4>
-//             <p>${user.url}</p>
-//         </div>
-//         `
-//     // adding the user card to DOM
-//     document.querySelector('#user-list').appendChild(card)
-// }
-
-const form = document.getElementById('github-form');
+const form = document.querySelector('#github-form');
 
 // form submit event listener
 form.addEventListener('submit', (e) => {
@@ -54,7 +11,8 @@ form.addEventListener('submit', (e) => {
     
     
     // fetching the github url based on the search input value
-    fetch(`https://api.github.com/users/${search}`, {
+    fetch(`https://api.github.com/search/users?q=${search}`, {
+        method: 'GET',
         headers: {
                    'Content-Type': 'application/json',
                    'Accept': 'application/vnd.github.v3+json'
@@ -62,22 +20,58 @@ form.addEventListener('submit', (e) => {
     })
     .then(response => response.json())
     .then(data => { 
-        console.log(data)
+        console.log(data);
+        
 
-        let card = document.createElement('li')
-        card.className = 'card'
-        card.innerHTML = `
-            <img src="${data.avatar_url}"/>
-            <div class="content">
-                <h4>${data.login}</h4>
-                <a target = "_blank" href ="https://github.com/${search}" <p>${data.url}</p> </a>
-            </div>
-            `
+        // using .forEach() to create a card for each user as a list item
+        data.items.forEach(user => {
+            let userlogin = document.createElement('h3');
+            let avatar = document.createElement('div')
+            let userlink = document.createElement('p')
+            let repobtn = document.createElement('button')
+
+            // appending the user information to the DOM
+            
+            avatar.innerHTML = `<img class="img-thumbnail ml-4" width="100" height="100" src="${user.avatar_url}" />`
+            userlogin.innerHTML = `${user.login}`
+            userlink.innerHTML = `<a target = "_blank" href ="https://github.com/${search}" <p>${user.url}</p> </a>`
+            repobtn.innerHTML = "Repos"
+
             // the target makes the link to appear in another page. The a tag makes the url a link
 
+
+            
+            // adding the user card to DOM
+            document.getElementById('user-list').appendChild(avatar)
+            document.getElementById('user-list').appendChild(userlogin)
+            document.getElementById('user-list').appendChild(userlink)
+            document.getElementById('user-list').appendChild(repobtn)
+
+            // let's add the repos per user after clicking the Repos button
+            repobtn.addEventListener('click', () => {
+                fetch(user.repos_url, {
+                  method: 'GET',
+                  header:{
+                       'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                        }
+                        })
+                          .then(res => res.json())
+                              .then(data => { data.forEach(user => {
+                                  let card = document.createElement('li')
+                                  card.innerHTML = `
+                                      <h3> ${user.name} </h3>
+                                      <p> ${user.url}</p>
+                                  `
+                                  document.getElementById('repos-list').appendChild(card)    
+                              });
+                          });
+                    })
+        })
         
-        // adding the user card to DOM
-        document.querySelector('#user-list').appendChild(card)
+
+
+        
 
     })
 
@@ -89,30 +83,3 @@ form.addEventListener('submit', (e) => {
 
 })
 
-// list event listener
-let li = document.querySelector('#user-list')
-li.addEventListener('click', () => {
-    let inp = document.getElementById('search').value;
-        fetch(`https://api.github.com/users/${inp}/repos`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            }
-            })
-            .then(res => res.json())
-            .then(repo => {console.log(repo)
-                let repcard = document.createElement('li')
-                repcard.className = 'repcard'
-                repcard.innerHTML = `
-                <p>${repo[1].name}</p>
-                `
-            // adding the repo card to DOM
-            document.getElementById('repos-list').appendChild(repcard)
-
-
-            })
-        }
-
-    
-
-)
